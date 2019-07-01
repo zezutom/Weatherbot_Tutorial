@@ -1,0 +1,16 @@
+version: '3.0'
+services:
+  rasa:
+    image: rasa/rasa:latest-full
+    container_name: rasa_all
+    ports:
+      - 5005:5005
+    volumes:
+      - ./:/app
+    command:
+      - run
+  action_server:
+    image: rasa/weatherbot 
+    container_name: rasa_weatherbot_actions
+    volumes:
+      - ./actions:/app/actions

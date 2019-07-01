@@ -1,0 +1,7 @@
+## Spacy
+spacy==2.1.4
+sklearn-crfsuite==0.3.6
+
+## Others
+git+https://github.com/apixu/apixu-python.git
+
