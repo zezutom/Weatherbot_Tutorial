@@ -10,18 +10,14 @@ The code of this repo differs quite significantly from the original video. This 
 ### Training the NLU model
 
 Training of the NLU model didn't change much from the way it was shown in the video. To train and test the model run:  
-
-``` python nlu_model.py ```
-```server.sh --mode nlu```
+```server.sh --nlu``` OR ```server.sh -n```
 
 ### Training the Rasa Core model
 
 The biggest change in how Rasa Core model works is that custom action 'action_weather' now needs to run on a separate server. That server has to be configured in a 'endpoints.yml' file.  This is how to train and run the dialogue management model:  
 1. Start the custom action server and train the Rasa Core model by running:  
 
-``` python -m rasa_core_sdk.endpoint --actions actions ```  
-``` python dialogue_management_model.py```  
-```server.sh --mode train --model dialogue_management_model.py```
+```server.sh --train``` OR ```server.sh -t```
 
  
 3. Talk to the chatbot once it's loaded.  
@@ -45,7 +41,7 @@ The process of running the interactive session is very similar to training the R
 
 I will do my best to keep this repo up-to-date, but if you encounter any issues with using the code, please raise an issue or drop me a message :)
 
-Latest code update: 01/03/2019
+Latest code update: 01/07/2019
 
 Latest compatible Rasa NLU version: 0.14.4
 Latest compatible Rasa Core version: 0.13.2
