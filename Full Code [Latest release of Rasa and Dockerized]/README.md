@@ -18,18 +18,15 @@ The biggest change in how Rasa Core model works is that custom action 'action_we
 1. Start the custom action server and train the Rasa Core model by running:  
 
 ```server.sh --train``` OR ```server.sh -t```
-
  
-3. Talk to the chatbot once it's loaded.  
+2. Talk to the chatbot once it's loaded.  
 
 ### Starting the interactive training session:
 
 The process of running the interactive session is very similar to training the Rasa Core model:
 1. Start the custom action server and start the interactive training session by running:  
 
-``` python -m rasa_core_sdk.endpoint --actions actions ```  
-``` python train_interactive.py ```  
-```server.sh --mode interactive```
+```server.sh --interactive``` OR ```server.sh --i```
 
 ### Connecting a chatbot to Slack:
 1. Configure the slack app as shown in the video  
