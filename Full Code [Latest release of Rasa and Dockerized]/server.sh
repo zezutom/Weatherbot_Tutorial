@@ -1,22 +1,47 @@
 #!/bin/bash
-set +x
+
 RASA_CONFIG_DIR="config/rasa/"
 MODEL_NAME="weather_model"
+CONTAINER_NAME="rasa_all"
 
-run_help() {
-  echo "Usage: server.sh -m | --model (nlu | train | interactive) [-b | --build]"
+show_help() {
+  echo "Usage:
+
+    server.sh [build | start | stop] [-m | --mode [nlu | train | interactive]]
+
+    Examples:
+      
+    server.sh start		.. just starts the docker container
+    server.sh -m train		.. trains the NLU model
+    server.sh build -m nlu	.. (re)builds the docker image and trains the NLU model
+
+    Parameters:
+
+    build	.. builds the docker image
+    start	.. starts the docker container
+    stop	.. stops the running container
+
+    Options:
+
+    -m | --mode	.. runs one of the modes below
+      nlu		.. trains the NLU model
+      train		.. trains the Rasa Core model
+      interactive	.. starts interactive learning
+  "
 }
 
-run_build() {
+build_docker_image() {
   docker build . -t rasa/weatherbot
 }
 
 run_nlu() {
-  echo "nlu mode!"
+  if [[ ! $(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME") = "true" ]]; then
+    start_docker_container
+  fi	 
+  docker exec -it rasa_all python nlu_model.py
 }
 
 run_train() {
-  echo "training"
   docker-compose run rasa train --data ['data'] \
         --config "$RASA_CONFIG_DIR/config.yml" \
         --domain "$RASA_CONFIG_DIR/domain.yml" \
@@ -32,51 +57,81 @@ run_interactive() {
         --endpoints "$RASA_CONFIG_DIR/endpoints.yml"
 }
 
-RUN_BUILD=false
+start_docker_container() {
+  docker-compose up -d
+}
+
+stop_docker_container() {
+  docker-compose down
+}
+
+PARAMS=""
+
 while (( "$#" )); do
   case "$1" in
-    -n|--nlu)
-      MODE="nlu"
-      shift 2
-      ;;
-    -t|--train)
-      MODE="train"
-      shift 2
-      ;;
-    -i|--interactive)
-      MODE="interactive"
-      shift 2
-      ;;
-    -b|--build)
-      RUN_BUILD=true 
+    -m|--mode)
+      MODE=$2
       shift 2
       ;;
     --) # end argument parsing
       shift
       break
       ;;
-    *) # unsupported flags
-      run_help 
+    -*|--*=) # unsupported flags
+      show_help 
       exit 1
       ;;
+    *) # only a single option is supported 
+      PARAMS="$1"
+      shift
+      ;;	    
   esac
 done
 
-if "$RUN_BUILD"; then
-  run_build
-fi
+case "$PARAMS" in
+  "stop")
+    stop_docker_container
+    echo "Server has stopped." 
+    exit 0
+    ;;
+  "start")
+    start_docker_container
+    echo "Server has started."
+    ;;
+  "build")
+    build_docker_image
+    echo "Docker image has been rebuilt."
+    ;;
+  *)
+    if [[ ! -z "$PARAMS" ]]; then
+      show_help
+      exit 1
+    fi
+    ;;
+esac
+
+if [ -z "$PARAMS" ] && [ -z "$MODE" ]; then
+  show_help
+  exit 1
+fi	
+
+if [ -z "$MODE" ]; then
+  exit 0
+fi	
 
 case "$MODE" in
   "nlu")
-     run_nlu
-     ;;
+    run_nlu
+    ;;
   "train")
-     run_train
-     ;;
+    run_train
+    ;;
   "interactive")
-     run_interactive
-     ;;
+    run_interactive
+    ;;
   *)
-    echo "Mode must be one of: nlu | train | interactive" 
+    show_help
+    exit 1
+    ;;
 esac;
 
